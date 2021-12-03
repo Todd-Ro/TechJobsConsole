@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TechJobsConsole
 {
@@ -7,6 +8,7 @@ namespace TechJobsConsole
     {
         static void Main(string[] args)
         {
+
             // Create two Dictionary vars to hold info for menu and data
 
             // Top-level menu options
@@ -16,7 +18,8 @@ namespace TechJobsConsole
 
             // Column options
             Dictionary<string, string> columnChoices = new Dictionary<string, string>();
-            columnChoices.Add("core competency", "Skill");
+            columnChoices.Add("core competency", "Skill"); //Key ("core competency") is internal string we use to refer to option
+            //Value ("Skill") is external way options will be shown to user.
             columnChoices.Add("employer", "Employer");
             columnChoices.Add("location", "Location");
             columnChoices.Add("position type", "Position Type");
@@ -24,14 +27,26 @@ namespace TechJobsConsole
 
             Console.WriteLine("Welcome to LaunchCode's TechJobs App!");
 
+
+            void printStringArray(string[] yourArray)
+            {
+                foreach (string item in yourArray)
+                {
+                    Console.WriteLine(item.ToString());
+                }
+            }
+
+            //printStringArray(JobData.getColumnLabelsFromScratch());
+
             // Allow user to search/list until they manually quit with ctrl+c
             while (true)
             {
-
+                //Allow user to choose how to view data: list or search
                 string actionChoice = GetUserSelection("View Jobs", actionChoices);
 
                 if (actionChoice.Equals("list"))
                 {
+                    //Let user choose which column to list
                     string columnChoice = GetUserSelection("List", columnChoices);
 
                     if (columnChoice.Equals("all"))
@@ -63,7 +78,9 @@ namespace TechJobsConsole
                     // Fetch results
                     if (columnChoice.Equals("all"))
                     {
-                        Console.WriteLine("Search all fields not yet implemented.");
+                        //TODO: Add search all fields functionality
+                        searchResults = JobData.FindByValue(searchTerm);
+                        PrintJobs(searchResults);
                     }
                     else
                     {
@@ -105,6 +122,8 @@ namespace TechJobsConsole
                 if (choiceIdx < 0 || choiceIdx >= choiceKeys.Length)
                 {
                     Console.WriteLine("Invalid choices. Try again.");
+                    //If chosen index is invalid, the do-while loop
+                    //will re-prompt the user for it.
                 }
                 else
                 {
@@ -116,9 +135,40 @@ namespace TechJobsConsole
             return choiceKeys[choiceIdx];
         }
 
+        static void printDictList(List<Dictionary<string, string>> listToPrint)
+        {
+            if (listToPrint.Count == 0)
+            {
+                Console.WriteLine("No results");
+                return;
+            }
+            Console.WriteLine("*****");
+            foreach (Dictionary<string, string> dict in listToPrint)
+            {
+                foreach (string s in dict.Keys)
+                {
+                    Console.WriteLine($"{s}: {dict[s]}");
+                }
+                Console.WriteLine("*****");
+            }
+        }
+
         private static void PrintJobs(List<Dictionary<string, string>> someJobs)
         {
-            Console.WriteLine("PrintJobs is not implemented yet");
+            //TODO: Implement PrintJobs
+            //List<Dictionary<string, string>> allJobs = JobData.FindAll();
+            printDictList(someJobs);
         }
+
+
+
+        void searchFieldWithTerm(string searchTerm, string fieldKey)
+        {
+            Console.WriteLine($"Searching field ${fieldKey} for term '{searchTerm}'");
+            printDictList(JobData.jobsMatchingTermInAnyField(searchTerm, fieldKey));
+        }
+
+
+
     }
 }

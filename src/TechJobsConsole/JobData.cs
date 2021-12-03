@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -7,6 +8,10 @@ namespace TechJobsConsole
 {
     class JobData
     {
+        //The JobData class is responsible for importing the data from the CSV file and
+        //parsing it into a C#-friendly format; that is, into Dictionary and List form.
+        //The LoadData method, in particular, creates the AllJobs property of type List<Dictionary<string, string>>
+
         static List<Dictionary<string, string>> AllJobs = new List<Dictionary<string, string>>();
         static bool IsDataLoaded = false;
 
@@ -48,8 +53,9 @@ namespace TechJobsConsole
             foreach (Dictionary<string, string> row in AllJobs)
             {
                 string aValue = row[column];
+                string aValueLower = aValue.ToLower();
 
-                if (aValue.Contains(value))
+                if (aValueLower.Contains(value.ToLower()))
                 {
                     jobs.Add(row);
                 }
@@ -138,5 +144,76 @@ namespace TechJobsConsole
 
             return rowValues.ToArray();
         }
+
+        public static string[] getColumnLabelsFromScratch()
+        {
+            string[] firstRow;
+            using (StreamReader reader = File.OpenText("job_data.csv"))
+            {
+                string line = reader.ReadLine();
+                string[] rowArray = CSVRowToStringArray(line);
+                return rowArray;
+            }
+        }
+
+
+        static Boolean SpecificFieldContainsStringMatch(Dictionary<string, string> dict, string s, string fieldKey)
+        {
+            string field = dict[fieldKey];
+            if (field.ToLower().Contains(s.ToLower()))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static List<Dictionary<string, string>>
+            jobsMatchingTermInAnyField(string s, string fieldKey)
+        {
+            List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
+            Boolean printThisOne;
+            List<Dictionary<string, string>> AllTheJobs = JobData.FindAll();
+            foreach (Dictionary<string, string> dict in AllTheJobs)
+            {
+                printThisOne = SpecificFieldContainsStringMatch(dict, s, fieldKey);
+
+                if (printThisOne)
+                {
+                    ret.Add(dict);
+                }
+            }
+            return ret;
+        }
+
+        static Boolean anyDictValueContainsStringMatch(Dictionary<string, string> dict, string searchTerm)
+        {
+            foreach (string field in dict.Values)
+            {
+                if (field.ToLower().Contains(searchTerm.ToLower()))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static List<Dictionary<string, string>> FindByValue(string searchTerm)
+        {
+            List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
+            Boolean printThisOne;
+            List<Dictionary<string, string>> AllTheJobs = JobData.FindAll();
+            foreach (Dictionary<string, string> dict in AllTheJobs)
+            {
+                printThisOne = anyDictValueContainsStringMatch(dict, searchTerm);
+
+                if (printThisOne)
+                {
+                    ret.Add(dict);
+                }
+            }
+            return ret;
+        }
+
     }
 }
